@@ -93,4 +93,6 @@ ast_t * ast_const(char * c, ast_list_t * args) {
   return v;
 }
 
+void free_ast_list(ast_list_t * al);
+void free_ast(ast_t * a);
 void print_ast(ast_t * a);

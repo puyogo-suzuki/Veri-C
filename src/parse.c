@@ -1,5 +1,4 @@
 #include <string.h>
-#include <stdio.h>
 #include "parse.h"
 #include "ast.h"
 
@@ -39,15 +38,18 @@ consume_context_t parse_expr(char * str) {
     consume_context_t a = parse_expr(str + 1);
     if(a.result == nullptr) return ret;
     str = a.consumed;
-    if(*str != ')') return ret;
-    if(str[1] != '(') return ret;
+    if(*str != ')') goto err;
+    if(str[1] != '(') goto err;
     consume_context_t b = parse_expr(str + 2);
-    if(b.result == nullptr) return ret;
+    if(b.result == nullptr) goto err;
     str = b.consumed;
-    if(*str != ')') return ret;
+    if(*str != ')') goto err2;
     ret.consumed = str + 1;
     ret.result = ast_app(a.result, b.result);
     return ret;
+    err2: free_ast(b.result);
+    err:  free_ast(a.result);
+    break;
   }
   case '$':
   case '?': {
@@ -60,15 +62,18 @@ consume_context_t parse_expr(char * str) {
     consume_context_t a = parse_expr(str + 1);
     if(a.result == nullptr) return ret;
     str = a.consumed;
-    if(*str != ')' || str[1] != '.' || str[2] != '(') return ret;
+    if(*str != ')' || str[1] != '.' || str[2] != '(') goto err3;
     consume_context_t b = parse_expr(str + 3);
-    if(b.result == nullptr) return ret;
+    if(b.result == nullptr) goto err3;
     str = b.consumed;
-    if(*str != ')') return ret;
+    if(*str != ')') goto err4;
     ret.consumed = str + 1;
     ret.result = first == '$' ? ast_lambda(x, a.result, b.result) :
       ast_pai(x, a.result, b.result);
     return ret;
+    err4: free_ast(b.result);
+    err3:  free_ast(a.result);
+    break;
   }
   default: {
     char * s = str;
@@ -85,19 +90,19 @@ consume_context_t parse_expr(char * str) {
     ast_list_t * li = nullptr;
     ast_list_t ** last = &li;
     while(*ss != ']') {
-      if(*ss != '(') return ret;
+      if(*ss != '(') goto err5;
       ss++;
       consume_context_t b = parse_expr(ss);
       if(b.result == nullptr)
-	return ret;
+	goto err;
       *last = (ast_list_t *)malloc(sizeof(ast_list_t));
       (*last)->value = b.result;
       (*last)->next = nullptr;
       last = &((*last)->next);
       ss = b.consumed;
-      if(*ss != ')') return ret;
+      if(*ss != ')') goto err5;
       if(ss[1] == ']') break;
-      if(ss[1] != ',') return ret;
+      if(ss[1] != ',') goto err5;
       ss += 2;
     }
     char * co = (char *)malloc(sizeof(char) * (s-str));
@@ -105,54 +110,14 @@ consume_context_t parse_expr(char * str) {
     ret.result = ast_const(co, li);
     ret.consumed = ss + 1;
     return ret;
+    err5: free_ast_list(li);
+    break;
   }
   }
+  ret.result = nullptr;
+  ret.consumed = str;
+  return ret;
 }
-
-void print_ast(ast_t * a) {
-  if(a == nullptr) { printf("fail"); return; }
-  switch(a->kind) {
-  case AST_KIND_VAR: putc(a->value.var, stdout); return;
-  case AST_KIND_STAR: putc('*', stdout); return;
-  case AST_KIND_SORT: printf("@"); return;
-  case AST_KIND_APP:
-    putc('(', stdout);
-    print_ast(a->value.app.M);
-    putc(')', stdout);
-    putc('(', stdout);
-    print_ast(a->value.app.N);
-    putc(')', stdout);
-    return;
-  case AST_KIND_LAMBDA:
-  case AST_KIND_PAI:
-    printf(a->kind == AST_KIND_LAMBDA ? "$" : "?");
-    putc(a->value.lambda.x, stdout);
-    putc(':', stdout);
-    putc('(', stdout);
-    print_ast(a->value.lambda.M);
-    putc(')', stdout);
-    putc('.', stdout);
-    putc('(', stdout);
-    print_ast(a->value.lambda.N);
-    putc(')', stdout);
-    return;
-  case AST_KIND_CONST:
-    printf("%s", a->value.cont.c);
-    putc('[', stdout);
-    ast_list_t * al = a->value.cont.args;
-    while(1) {
-      putc('(', stdout);
-      print_ast(al->value);
-      putc(')', stdout);
-      al = al->next;
-      if(al == nullptr) break;
-      putc(',', stdout);
-    }
-    putc(']', stdout);
-    return;
-  }
-}
-
 
 ast_t * parse(char *c) {
   consume_context_t cc = parse_expr(c);
