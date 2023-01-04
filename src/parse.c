@@ -83,7 +83,7 @@ consume_context_t parse_expr(char * str) {
       return ret;
     }
     if(!isAlphabet(*s)) return ret;
-    while(isAlphabet(*s)) s++;
+    while(isConstChar(*s)) s++;
     if(s == str) return ret;
     if(*s != '[') return ret;
     char * ss = s+1;
@@ -105,8 +105,9 @@ consume_context_t parse_expr(char * str) {
       if(ss[1] != ',') goto err5;
       ss += 2;
     }
-    char * co = (char *)malloc(sizeof(char) * (s-str));
-    memcpy(s, co, s-str);
+    char * co = (char *)malloc(sizeof(char) + (s-str));
+    memcpy(co, str, (s-str)/sizeof(char));
+    co[(s-str)/sizeof(char)+1] = 0;
     ret.result = ast_const(co, li);
     ret.consumed = ss + 1;
     return ret;

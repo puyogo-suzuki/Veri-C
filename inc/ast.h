@@ -87,8 +87,8 @@ ast_t * ast_pai(char x, ast_t * M, ast_t * N) {
 static inline
 ast_t * ast_const(char * c, ast_list_t * args) {
   ast_t * v = (ast_t *)malloc(sizeof(ast_t));
-  v->kind = AST_KIND_PAI;
-  v->value.cont.c = strdup(c);
+  v->kind = AST_KIND_CONST;
+  v->value.cont.c = c;
   v->value.cont.args = args;
   return v;
 }

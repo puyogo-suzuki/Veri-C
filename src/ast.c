@@ -59,7 +59,7 @@ void print_ast(ast_t * a) {
     printf("%s", a->value.cont.c);
     putc('[', stdout);
     ast_list_t * al = a->value.cont.args;
-    while(1) {
+    while(al != nullptr) {
       putc('(', stdout);
       print_ast(al->value);
       putc(')', stdout);
