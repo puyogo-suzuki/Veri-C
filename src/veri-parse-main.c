@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include <parse.h>
-#include <ast.h>
+#include "parse.h"
+#include "ast.h"
 
 int main(void) {
   char buf[512];
