@@ -6,7 +6,9 @@ set(PD ${PROJECT_SOURCE_DIR})
 set(SOURCES
         src/ast.c
 	src/parse.c
-	src/alpha.c)
+	src/alpha.c
+	src/check.c
+      src/get_type.c)
 	
 
 add_executable(veri-parse
@@ -16,4 +18,9 @@ add_executable(veri-parse
 add_executable(veri-alpha
 	${SOURCES}
 	${PROJECT_SOURCE_DIR}/src/veri-alpha-main.c)
+
+add_executable(veri-check
+	${SOURCES}
+	${PROJECT_SOURCE_DIR}/src/veri-check-main.c)
+
 include_directories(${PROJECT_SOURCE_DIR}/inc)

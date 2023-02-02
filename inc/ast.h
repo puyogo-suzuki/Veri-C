@@ -23,8 +23,9 @@ typedef enum ast_kind_t {
 
 typedef struct ast_t {
   ast_kind_t kind;
+  int rc;
   union {
-    char var;
+    int var;
     struct{ struct ast_t * M; struct ast_t * N; } app;
     struct{ char x; struct ast_t * M; struct ast_t * N; } lambda;
     struct{ char x; struct ast_t * M; struct ast_t * N; } pai;
@@ -32,10 +33,12 @@ typedef struct ast_t {
   } value;
 } ast_t;
 
+static ast_t bottom;
 
 static inline
-ast_t * ast_var(char ch) {
+ast_t * ast_var(int ch) {
   ast_t * v = (ast_t *)malloc(sizeof(ast_t));
+  v->rc = 0;
   v->kind = AST_KIND_VAR;
   v->value.var = ch;
   return v;
@@ -44,6 +47,7 @@ ast_t * ast_var(char ch) {
 static inline
 ast_t * ast_sort(void) {
   ast_t * v = (ast_t *)malloc(sizeof(ast_t));
+  v->rc = 0;
   v->kind = AST_KIND_SORT;
   return v;
 }
@@ -51,6 +55,7 @@ ast_t * ast_sort(void) {
 static inline
 ast_t * ast_aster(void) {
   ast_t * v = (ast_t *)malloc(sizeof(ast_t));
+  v->rc = 0;
   v->kind = AST_KIND_STAR;
   return v;
 }
@@ -58,6 +63,7 @@ ast_t * ast_aster(void) {
 static inline
 ast_t * ast_app(ast_t * M, ast_t * N) {
   ast_t * v = (ast_t *)malloc(sizeof(ast_t));
+  v->rc = 0;
   v->kind = AST_KIND_APP;
   v->value.app.M = M;
   v->value.app.N = N;
@@ -67,6 +73,7 @@ ast_t * ast_app(ast_t * M, ast_t * N) {
 static inline
 ast_t * ast_lambda(char x, ast_t * M, ast_t * N) {
   ast_t * v = (ast_t *)malloc(sizeof(ast_t));
+  v->rc = 0;
   v->kind = AST_KIND_LAMBDA;
   v->value.lambda.x = x;
   v->value.lambda.M = M;
@@ -77,6 +84,7 @@ ast_t * ast_lambda(char x, ast_t * M, ast_t * N) {
 static inline
 ast_t * ast_pai(char x, ast_t * M, ast_t * N) {
   ast_t * v = (ast_t *)malloc(sizeof(ast_t));
+  v->rc = 0;
   v->kind = AST_KIND_PAI;
   v->value.pai.x = x;
   v->value.pai.M = M;
@@ -87,6 +95,7 @@ ast_t * ast_pai(char x, ast_t * M, ast_t * N) {
 static inline
 ast_t * ast_const(char * c, ast_list_t * args) {
   ast_t * v = (ast_t *)malloc(sizeof(ast_t));
+  v->rc = 0;
   v->kind = AST_KIND_CONST;
   v->value.cont.c = c;
   v->value.cont.args = args;

@@ -1,6 +1,12 @@
 #include <stdio.h>
 #include "ast.h"
 
+static ast_t bottom = {
+    .kind = AST_KIND_VAR,
+    .rc = 10000,
+    .value.var = 0
+};
+
 void free_ast_list(ast_list_t * al) {
   while(al != nullptr) {
     ast_list_t * ne = al->next;
@@ -10,6 +16,10 @@ void free_ast_list(ast_list_t * al) {
 }
 
 void free_ast(ast_t * a) {
+  if(a->rc > 1) {
+    a->rc--;
+    return;
+  }
   switch(a->kind) {
   case AST_KIND_APP:
     free_ast(a->value.app.M);
@@ -31,7 +41,7 @@ void free_ast(ast_t * a) {
 void print_ast(ast_t * a) {
   if(a == nullptr) { printf("nullptr"); return; }
   switch(a->kind) {
-  case AST_KIND_VAR: putc(a->value.var, stdout); return;
+  case AST_KIND_VAR: printf(a->value.var == 0 ? "_" : "%d", a->value.var); return;
   case AST_KIND_STAR: putc('*', stdout); return;
   case AST_KIND_SORT: printf("@"); return;
   case AST_KIND_APP:

@@ -45,6 +45,8 @@ consume_context_t parse_expr(char * str) {
     str = b.consumed;
     if(*str != ')') goto err2;
     ret.consumed = str + 1;
+    a.result->rc++;
+    b.result->rc++;
     ret.result = ast_app(a.result, b.result);
     return ret;
     err2: free_ast(b.result);
@@ -68,6 +70,8 @@ consume_context_t parse_expr(char * str) {
     str = b.consumed;
     if(*str != ')') goto err4;
     ret.consumed = str + 1;
+    a.result->rc++;
+    b.result->rc++;
     ret.result = first == '$' ? ast_lambda(x, a.result, b.result) :
       ast_pai(x, a.result, b.result);
     return ret;
@@ -97,6 +101,7 @@ consume_context_t parse_expr(char * str) {
 	goto err;
       *last = (ast_list_t *)malloc(sizeof(ast_list_t));
       (*last)->value = b.result;
+      b.result->rc++;
       (*last)->next = nullptr;
       last = &((*last)->next);
       ss = b.consumed;
